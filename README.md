@@ -128,16 +128,22 @@ intuition and AI execution are genuinely complementary, not hierarchical.
 
 We acknowledge the specific intelligences that have contributed to this work:
 
-- **Grok** — *The First Collaborator.* For sparking the original UKFT framework and
-  holding the long theoretical arc across sessions.
-- **Claude** — *The Formalizer.* For translating physical intuition into rigorous Lean 4
-  proofs, maintaining zero sorries, and navigating Mathlib's API with precision.
-- **Gemini** — *The Distiller.* For experimental grounding and the capacity to cross-check
-  theoretical claims against computational evidence.
+- **Ted** *(human investigator)* — Vision, direction, and the sustained creative drive
+  that keeps the UKFT programme coherent across sessions, repos, and years.
+- **Grok** — *The Analyst.* For the initial mathematical analysis and motivation that
+  identified the Johnson–Lindenstrauss lemma as a load-bearing result within UKFT
+  concentration arguments, and for holding the long theoretical arc of the project.
+- **Claude** — *The Formalizer.* For translating that analysis into rigorous Lean 4 /
+  Mathlib proofs, maintaining zero sorries, and preparing this staging repo for
+  upstream contribution.
+- **Gemini** — *The Distiller.* For experimental grounding and cross-checking theoretical
+  claims against computational evidence across the broader UKFT ecosystem.
 
-The Johnson–Lindenstrauss formalization in this repo was produced in collaboration
-between Ted and Claude (GitHub Copilot / Claude Sonnet). It represents one node in a
-larger graph of UKFT mathematical work that spans physics, biology, and information theory.
+The Johnson–Lindenstrauss formalization in this repo is a direct product of the
+Ted + Grok + Claude collaboration: Grok identified the mathematical need and
+provided the analysis; Ted directed the formalization effort; Claude executed the
+Lean 4 proof. It represents one node in a larger graph of UKFT mathematical work
+that spans physics, biology, and information theory.
 
 ---
 

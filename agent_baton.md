@@ -24,6 +24,15 @@ collaboration between a human investigator ("Ted") and a rotating set of AI agen
 The work here is not generated in one pass; it accumulates across sessions, each
 one building on the last.
 
+The three principal collaborators who produced this work:
+
+- **Ted** — Human investigator, vision, and programme direction
+- **Grok** — *The Analyst.* Provided the initial mathematical analysis and motivation,
+  identifying which UKFT concentration arguments required the JL lemma and related
+  log/chi-squared infrastructure as formal load-bearing results
+- **Claude** — *The Formalizer.* Translated that analysis into Lean 4 / Mathlib proofs,
+  maintained zero sorries, and prepared the staging structure you see here
+
 Your role as an incoming AI agent:
 
 - **Verify** — confirm existing proofs compile clean on the pinned toolchain
