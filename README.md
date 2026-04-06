@@ -7,6 +7,34 @@ Each file under `Contrib/` corresponds to a planned Mathlib PR. Declarations are
 
 ---
 
+## About UKFT
+
+UKFT (Unified Knowledge Field Theory) is a framework for understanding how knowledge
+structures form, evolve, and interact — drawing on ideas from physics, information
+theory, and cognitive science to develop a rigorous mathematical foundation for
+reasoning about knowledge and consciousness.
+
+The project spans a broad ecosystem of research and engineering work. Two active
+public repositories are currently open:
+
+- **[ukftphys](https://github.com/Wolfman56/ukftphys)** — physics-facing formalizations
+  and theoretical development grounded in the UKFT framework
+- **[ukftbio](https://github.com/Wolfman56/ukftbio)** — biological and cognitive
+  applications of UKFT, exploring knowledge dynamics in living systems
+
+Beyond these, a significant number of private repositories cover applied ML training
+infrastructure, agent runtimes, orchestration systems, and domain-specific simulations
+that build on UKFT foundations.
+
+**The purpose of this repository** (`lean-publish`) is narrower and specific: to share
+the *mathematical foundational work* from the UKFT ecosystem in a form suitable for
+the broader Lean / Mathlib community. Lemmas and theorems that arise in UKFT proofs
+and belong in Mathlib's general library are staged here, hygiene-checked, and
+submitted as PRs. This is not a research exposition of UKFT itself — it is a pipeline
+for contributing reusable mathematics upstream.
+
+---
+
 ## Contribution Status
 
 | Proposed Mathlib path | File | Key declarations | Status |
