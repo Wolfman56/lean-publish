@@ -11,11 +11,12 @@ Each file under `Contrib/` corresponds to a planned Mathlib PR. Declarations are
 
 | Proposed Mathlib path | File | Key declarations | Status |
 |---|---|---|---|
-| `Mathlib.Analysis.SpecialFunctions.Log.Inequalities` | [Contrib/Analysis/SpecialFunctions/Log/Inequalities.lean](Contrib/Analysis/SpecialFunctions/Log/Inequalities.lean) | `log_one_add_le`, `log_one_sub_le` | staging |
-| `Mathlib.Probability.Moments.ChiSquared` | [Contrib/Probability/Moments/ChiSquared.lean](Contrib/Probability/Moments/ChiSquared.lean) | `mgf_sq_gaussianReal` | staging |
-| `Mathlib.Probability.Concentration.JohnsonLindenstrauss` | [Contrib/Probability/Concentration/JohnsonLindenstrauss.lean](Contrib/Probability/Concentration/JohnsonLindenstrauss.lean) | `gaussianMatrixMeasure`, `jl_chisq_complement_bound`, `jl_concentration_single_pair`, `jl_union_bound`, `johnson_lindenstrauss` | staging |
+| `Mathlib.Analysis.SpecialFunctions.Log.Inequalities` | [Contrib/Analysis/SpecialFunctions/Log/Inequalities.lean](Contrib/Analysis/SpecialFunctions/Log/Inequalities.lean) | `log_one_add_le`, `log_one_sub_le` | staging ✓ |
+| `Mathlib.Probability.Moments.ChiSquared` | [Contrib/Probability/Moments/ChiSquared.lean](Contrib/Probability/Moments/ChiSquared.lean) | `mgf_sq_gaussianReal` | staging ✓ |
+| `Mathlib.Probability.Concentration.JohnsonLindenstrauss` | [Contrib/Probability/Concentration/JohnsonLindenstrauss.lean](Contrib/Probability/Concentration/JohnsonLindenstrauss.lean) | `gaussianMatrixMeasure`, `jl_chisq_complement_bound`, `jl_concentration_single_pair`, `jl_union_bound`, `johnson_lindenstrauss` | staging ✓ |
 
 **Status legend:** `staging` → code present, Mathlib PR not yet opened.
+`staging ✓` → `lake build` clean on `leanprover/lean4:v4.29.0` (verified 2026-04-06).
 `open` → PR submitted, link in the table.
 `merged` → PR merged; retire this file and update the working copy.
 
@@ -61,14 +62,16 @@ Files here are updated from the working copy whenever the proof changes.
 ## Build
 
 ```bash
-# First run: downloads Mathlib (large, ~several minutes)
-lake update
+# First run: resolves Mathlib and fetches prebuilt oleans
+lake update && lake exe cache get
 
-# Subsequent runs
+# Compile Contrib files
 lake build
 ```
 
 Requires Lean 4 toolchain `leanprover/lean4:v4.29.0` (managed by `elan` via `lean-toolchain`).
+
+**Verified:** `lake build` exits 0 with no warnings (2026-04-06, commit `c2ce1aa`).
 
 ---
 
@@ -76,4 +79,6 @@ Requires Lean 4 toolchain `leanprover/lean4:v4.29.0` (managed by `elan` via `lea
 
 **Proof source:** [Dasgupta & Gupta (2003)](https://cseweb.ucsd.edu/~dasgupta/papers/jl.pdf) — elementary Gaussian proof of the Johnson–Lindenstrauss lemma.
 
-**Working copy:** `uktf/jl_lemma/` in [Wolfman56/uktf](https://github.com/Wolfman56/uktf) (commit `a9ebf95`).
+**Working copy:** `uktf/jl_lemma/` in [Wolfman56/uktf](https://github.com/Wolfman56/uktf) (commit `a9ebf95`, 0 sorries).
+
+**This repo:** [Wolfman56/lean-publish](https://github.com/Wolfman56/lean-publish) (commit `c2ce1aa`, 3-file split, `lake build` ✓).
