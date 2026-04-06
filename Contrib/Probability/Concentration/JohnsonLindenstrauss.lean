@@ -32,7 +32,7 @@ and Lindenstrauss. *Random Structures & Algorithms* 22(1), 60–65.
 ## Status
 
 -- STAGING: pending Mathlib PR targeting Mathlib.Probability.Concentration.JohnsonLindenstrauss
--- Sub-lemmas `log_one_add_le`, `log_one_sub_le` are staged in
+-- Sub-lemmas `Real.log_one_add_le`, `Real.log_one_sub_le` are staged in
 --   Contrib.Analysis.SpecialFunctions.Log.Inequalities.
 -- Sub-lemma `mgf_sq_gaussianReal` is staged in
 --   Contrib.Probability.Moments.ChiSquared.
@@ -381,7 +381,7 @@ lemma jl_chisq_complement_bound
         (1 - 2 * t_u) ^ (-((↑m : ℝ) / 2)) ≤ Real.exp (-(↑m * ε ^ 2 / 8)) := by
       rw [ht_u_val]
       have hone_add_pos : (0 : ℝ) < 1 + ε := by linarith
-      have hlog := log_one_add_le (by linarith : -1 < ε) hε'.le
+      have hlog := Real.log_one_add_le (by linarith : -1 < ε) hε'.le
       have hrpow : (1 / (1 + ε)) ^ (-((↑m : ℝ) / 2)) = Real.exp ((↑m / 2) * Real.log (1 + ε)) := by
         have h_pos : (0 : ℝ) < 1 / (1 + ε) := by positivity
         rw [Real.rpow_def_of_pos h_pos]
@@ -444,7 +444,7 @@ lemma jl_chisq_complement_bound
         (1 - 2 * t_l) ^ (-((↑m : ℝ) / 2)) ≤ Real.exp (-(↑m * ε ^ 2 / 8)) := by
       rw [ht_l_val]
       have hone_sub_pos : (0 : ℝ) < 1 - ε := by linarith
-      have hlog := log_one_sub_le hε.le hε'
+      have hlog := Real.log_one_sub_le hε.le hε'
       have hrpow : (1 / (1 - ε)) ^ (-((↑m : ℝ) / 2)) = Real.exp ((↑m / 2) * Real.log (1 - ε)) := by
         have h_pos : (0 : ℝ) < 1 / (1 - ε) := by positivity
         rw [Real.rpow_def_of_pos h_pos]

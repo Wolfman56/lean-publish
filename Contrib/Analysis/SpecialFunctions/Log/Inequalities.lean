@@ -9,8 +9,8 @@ Chernoff bounds for the Johnson–Lindenstrauss lemma.
 
 ## Main results
 
-* `log_one_add_le` : `log(1+ε) ≤ ε − ε²/4` for `ε ∈ (−1, 1]`
-* `log_one_sub_le` : `log(1−ε) ≤ −ε − ε²/4` for `ε ∈ [0, 1)`
+* `Real.log_one_add_le` : `log(1+ε) ≤ ε − ε²/4` for `ε ∈ (−1, 1]`
+* `Real.log_one_sub_le` : `log(1−ε) ≤ −ε − ε²/4` for `ε ∈ [0, 1)`
 
 Both bounds are tight enough to close the Chernoff exponent to `−mε²/8`
 in the JL chi-squared tail (see `Contrib.Probability.Concentration.JohnsonLindenstrauss`).
@@ -25,6 +25,8 @@ and Lindenstrauss. *Random Structures & Algorithms* 22(1), 60–65.
 -- STAGING: pending Mathlib PR targeting Mathlib.Analysis.SpecialFunctions.Log.Inequalities
 -- Retire this file once the PR is merged into Mathlib.
 -/
+
+namespace Real
 
 /-- **Log upper bound**: `log(1+ε) ≤ ε − ε²/4` for `ε ∈ (−1, 1]`.
 
@@ -131,3 +133,5 @@ lemma log_one_sub_le {ε : ℝ} (hε0 : 0 ≤ ε) (hε1 : ε < 1) :
         rw [interior_Ico] at he
         exact div_nonneg (mul_nonneg he.1.le (by linarith [he.1])) (by linarith [he.2]))
   exact hh0 ▸ hmon (Set.left_mem_Ico.mpr (by linarith)) (Set.mem_Ico.mpr ⟨hε0, hε1⟩) hε0
+
+end Real
