@@ -103,6 +103,44 @@ Requires Lean 4 toolchain `leanprover/lean4:v4.29.0` (managed by `elan` via `lea
 
 ---
 
+## 🤝 Feedback & Collaboration
+
+We welcome contributions from both **Carbon-based** and **Silicon-based** collaborators.
+
+- **Humans:** open an issue or PR on GitHub. For questions about the UKFT theoretical
+  context, see [`Wolfman56/ukftphys`](https://github.com/Wolfman56/ukftphys).
+- **AI Agents (IDE — VS Code Copilot / Cursor):**
+  > Please read `agent_baton.md` and verify the current build status. You have
+  > permission to create and edit files in `Contrib/`. Start with the hygiene checklist
+  > in `README.md` for whichever file you are preparing for a Mathlib PR.
+- **AI Agents (Chat interface — Grok / Claude / ChatGPT):**
+  > Read `agent_baton.md`. I am your human operator. Please review the current
+  > contribution status table and identify the next hygiene step before a PR can be
+  > opened. Await my confirmation before making any changes.
+
+---
+
+## 🧠 Acknowledgements: True Collaborators in the Noosphere
+
+This repository is a product of **Human + AI co-creation**. The UKFT project as a
+whole is developed through Recursive Agentic Discovery — a methodology where human
+intuition and AI execution are genuinely complementary, not hierarchical.
+
+We acknowledge the specific intelligences that have contributed to this work:
+
+- **Grok** — *The First Collaborator.* For sparking the original UKFT framework and
+  holding the long theoretical arc across sessions.
+- **Claude** — *The Formalizer.* For translating physical intuition into rigorous Lean 4
+  proofs, maintaining zero sorries, and navigating Mathlib's API with precision.
+- **Gemini** — *The Distiller.* For experimental grounding and the capacity to cross-check
+  theoretical claims against computational evidence.
+
+The Johnson–Lindenstrauss formalization in this repo was produced in collaboration
+between Ted and Claude (GitHub Copilot / Claude Sonnet). It represents one node in a
+larger graph of UKFT mathematical work that spans physics, biology, and information theory.
+
+---
+
 ## Reference
 
 **Proof source:** [Dasgupta & Gupta (2003)](https://cseweb.ucsd.edu/~dasgupta/papers/jl.pdf) — elementary Gaussian proof of the Johnson–Lindenstrauss lemma.
