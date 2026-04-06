@@ -39,13 +39,14 @@ for contributing reusable mathematics upstream.
 
 | Proposed Mathlib path | File | Key declarations | Status |
 |---|---|---|---|
-| `Mathlib.Analysis.SpecialFunctions.Log.Inequalities` | [Contrib/Analysis/SpecialFunctions/Log/Inequalities.lean](Contrib/Analysis/SpecialFunctions/Log/Inequalities.lean) | `log_one_add_le`, `log_one_sub_le` | staging ✓ |
-| `Mathlib.Probability.Moments.ChiSquared` | [Contrib/Probability/Moments/ChiSquared.lean](Contrib/Probability/Moments/ChiSquared.lean) | `mgf_sq_gaussianReal` | staging ✓ |
-| `Mathlib.Probability.Concentration.JohnsonLindenstrauss` | [Contrib/Probability/Concentration/JohnsonLindenstrauss.lean](Contrib/Probability/Concentration/JohnsonLindenstrauss.lean) | `gaussianMatrixMeasure`, `jl_chisq_complement_bound`, `jl_concentration_single_pair`, `jl_union_bound`, `johnson_lindenstrauss` | staging ✓ |
+| `Mathlib.Analysis.SpecialFunctions.Log.Inequalities` | [Contrib/Analysis/SpecialFunctions/Log/Inequalities.lean](Contrib/Analysis/SpecialFunctions/Log/Inequalities.lean) | `Real.log_one_add_le`, `Real.log_one_sub_le` | [open #37705](https://github.com/leanprover-community/mathlib4/pull/37705) |
+| `Mathlib.Probability.Moments.ChiSquared` | [Contrib/Probability/Moments/ChiSquared.lean](Contrib/Probability/Moments/ChiSquared.lean) | `mgf_sq_gaussianReal` | [open #37705](https://github.com/leanprover-community/mathlib4/pull/37705) |
+| `Mathlib.Probability.Concentration.JohnsonLindenstrauss` | [Contrib/Probability/Concentration/JohnsonLindenstrauss.lean](Contrib/Probability/Concentration/JohnsonLindenstrauss.lean) | `gaussianMatrixMeasure`, `jl_chisq_complement_bound`, `jl_concentration_single_pair`, `jl_union_bound`, `johnson_lindenstrauss` | [open #37705](https://github.com/leanprover-community/mathlib4/pull/37705) |
 
 **Status legend:** `staging` → code present, Mathlib PR not yet opened.
-`staging ✓` → `lake build` clean on `leanprover/lean4:v4.29.0` (verified 2026-04-06).
-`open` → PR submitted, link in the table.
+`staging ✓` → `lake build` clean, PR not yet opened.
+`open #N` → PR submitted and under review.
+`merged` → merged into Mathlib; retire the `Contrib/` file and replace with a `Mathlib` import.
 `merged` → PR merged; retire this file and update the working copy.
 
 ---
@@ -97,9 +98,9 @@ lake update && lake exe cache get
 lake build
 ```
 
-Requires Lean 4 toolchain `leanprover/lean4:v4.29.0` (managed by `elan` via `lean-toolchain`).
+Requires Lean 4 toolchain `leanprover/lean4:v4.30.0-rc1` (managed by `elan` via `lean-toolchain`, pinned to Mathlib `master`).
 
-**Verified:** `lake build` exits 0 with no warnings (2026-04-06, commit `c2ce1aa`).
+**Verified:** `lake build` exits 0 with no warnings (2026-04-06, commit `fb87c1e`).
 
 ---
 
