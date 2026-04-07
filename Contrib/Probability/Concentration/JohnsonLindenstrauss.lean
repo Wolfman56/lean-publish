@@ -37,14 +37,30 @@ private lemma smul_mulVec_real {m d : ℕ} (c : ℝ) (M : Fin m → Fin d → �
   simp only [Pi.smul_apply, smul_eq_mul, ← Finset.mul_sum, mul_assoc]
 
 
+/-- Bridge: `Matrix (Fin m) (Fin d) ℝ` is definitionally equal to `Fin m → Fin d → ℝ`
+(`def Matrix m n α := m → n → α`), but Lean won't find Pi instances automatically
+through the opaque `def`. This instance makes `MeasurableSpace` available. -/
+instance {m n : Type*} {α : Type*} [MeasurableSpace α] :
+    MeasurableSpace (Matrix m n α) :=
+  inferInstanceAs (MeasurableSpace (m → n → α))
+
 /-- Gaussian i.i.d. product measure over `m × d` real matrices (each entry ~ N(0,1)).
 
 **Construction**: nested product of `ProbabilityTheory.gaussianReal 0 1` measures,
 one per entry, using `MeasureTheory.Measure.pi` twice (over rows, then columns). -/
 noncomputable def gaussianMatrixMeasure (m d : ℕ) :
-    MeasureTheory.Measure (Fin m → Fin d → ℝ) :=
+    MeasureTheory.Measure (Matrix (Fin m) (Fin d) ℝ) :=
   MeasureTheory.Measure.pi (fun _ : Fin m =>
     MeasureTheory.Measure.pi (fun _ : Fin d => ProbabilityTheory.gaussianReal 0 1))
+
+/-- Bridge: `IsProbabilityMeasure` for `gaussianMatrixMeasure`, routed through the
+Pi instance since `Matrix` is an opaque `def`. -/
+instance (m d : ℕ) :
+    MeasureTheory.IsProbabilityMeasure (gaussianMatrixMeasure m d) := by
+  show MeasureTheory.IsProbabilityMeasure
+    (MeasureTheory.Measure.pi (fun _ : Fin m =>
+      MeasureTheory.Measure.pi (fun _ : Fin d => ProbabilityTheory.gaussianReal 0 1)))
+  infer_instance
 
 /-- The marginal of `gaussianMatrixMeasure` along row `i` is the i.i.d. N(0,1)
 product measure on the `d` entries of that row. -/
@@ -150,8 +166,7 @@ lemma jl_chisq_complement_bound
             ‖(WithLp.equiv 2 (Fin m → ℝ)).symm (Matrix.mulVec A x)‖ ^ 2
             ∉ Set.Icc (1 - ε) (1 + ε)} ≤
     ENNReal.ofReal (2 * Real.exp (-(↑m * ε ^ 2 / 8))) := by
-  haveI hPM : MeasureTheory.IsProbabilityMeasure (gaussianMatrixMeasure m d) := by
-    simp only [gaussianMatrixMeasure]; infer_instance
+  haveI hPM : MeasureTheory.IsProbabilityMeasure (gaussianMatrixMeasure m d) := inferInstance
   have hm_real : (0 : ℝ) < m := Nat.cast_pos.mpr hm
   have hm_ne : (m : ℝ) ≠ 0 := hm_real.ne'
   let x' : Fin d → ℝ := fun j => x j
@@ -438,9 +453,7 @@ lemma jl_concentration_single_pair
       ∈ Set.Icc (1 - ε) (1 + ε)} with hS_def
   have hS_meas : MeasurableSet S := by
     simp only [hS_def]; measurability
-  haveI hPM : MeasureTheory.IsProbabilityMeasure (gaussianMatrixMeasure m d) := by
-    simp only [gaussianMatrixMeasure]
-    infer_instance
+  haveI hPM : MeasureTheory.IsProbabilityMeasure (gaussianMatrixMeasure m d) := inferInstance
   have hSc : (gaussianMatrixMeasure m d) Sᶜ ≤
       ENNReal.ofReal (2 * Real.exp (-(↑m * ε ^ 2 / 8))) := by
     have hset : Sᶜ = {A : Fin m → Fin d → ℝ |
@@ -499,8 +512,7 @@ lemma jl_union_bound
             ‖(WithLp.equiv 2 (Fin m → ℝ)).symm (Matrix.mulVec A (u - v))‖ ^ 2 ≤
           (1 + ε) * ‖u - v‖ ^ 2}
     have hGood_pos : 0 < gaussianMatrixMeasure m d Good := by
-      haveI hPM : MeasureTheory.IsProbabilityMeasure (gaussianMatrixMeasure m d) := by
-        simp only [gaussianMatrixMeasure]; infer_instance
+      haveI hPM : MeasureTheory.IsProbabilityMeasure (gaussianMatrixMeasure m d) := inferInstance
       have hm_pos : 0 < m := by
         rcases Nat.eq_zero_or_pos m with rfl | h
         · simp only [Nat.cast_zero, gt_iff_lt] at hm
