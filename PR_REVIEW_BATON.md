@@ -3,6 +3,7 @@
 
 Date: 2026-04-06  
 PR: https://github.com/leanprover-community/mathlib4/pull/37705  
+Zulip: https://leanprover.zulipchat.com/#narrow/channel/113489-new-members/topic/New.20member.20PR.20.2337705/with/583877998  
 Status: `awaiting-author`  
 Lean: `v4.30.0-rc1` | Mathlib: `master @ 35186be`  
 Reviewer models: hand this file to each model and collect feedback verbatim.
