@@ -157,4 +157,63 @@ exactly one line, reducing D5 to a `Pi.*`→`Matrix.*` simp-set audit at the cal
 4. If it does not compile: record the exact elaboration error — it will tell us whether
    the body needs an explicit `show` cast or a genuine proof of measure transport.
 
-**Status**: In progress — see commits following this entry.
+**Status**: Complete — see findings below.
+
+### Experiment 1 Findings
+
+**Step 1a — return-type-only change (body unchanged)**
+
+Changed `gaussianMatrixMeasure` return type from `Measure (Fin m → Fin d → ℝ)` to
+`Measure (Matrix (Fin m) (Fin d) ℝ)`, body unchanged. Build result:
+
+```
+error: failed to synthesize instance of type class
+  MeasurableSpace (Matrix (Fin m) (Fin d) ℝ)
+```
+
+Hypothesis **disproved** — the elaborator cannot find the `MeasurableSpace` instance
+because `Matrix` is an opaque `def`. The Pi instance `MeasurableSpace.pi` does not
+fire.
+
+**Step 1b — add `MeasurableSpace` bridge instance**
+
+Added one instance before the definition:
+```lean
+instance {m n : Type*} {α : Type*} [MeasurableSpace α] :
+    MeasurableSpace (Matrix m n α) :=
+  inferInstanceAs (MeasurableSpace (m → n → α))
+```
+
+Build result: **13+ errors → 8 errors**. The `simp only [gaussianMatrixMeasure]`
+failures all disappeared. Remaining 8 errors collapse to 3 patterns:
+
+| Pattern | Count | Root cause |
+|---------|-------|------------|
+| **P1** `IsProbabilityMeasure` synthesis | 3 sites | Pi instance won't fire; needs its own bridge |
+| **P2** `rewrite` pattern not found | 2 sites | `S : Set (Fin m → Fin d → ℝ)` vs measure over `Matrix` — set types diverge |
+| **P3** `compl_compl` simp fails | 2 sites | Same set-type mismatch as P2 |
+
+**P1** can be fixed with a second bridge instance:
+```lean
+instance (m d : ℕ) : IsProbabilityMeasure (gaussianMatrixMeasure m d) := by
+  show IsProbabilityMeasure
+    (Measure.pi (fun _ : Fin m => Measure.pi (fun _ : Fin d => gaussianReal 0 1)))
+  infer_instance
+```
+
+**P2 and P3 reveal the actual O(n) work**: every internal set comprehension in the
+proof body spells `A : Fin m → Fin d → ℝ` explicitly (e.g.,
+`{A : Fin m → Fin d → ℝ | ...}`, `have hset : Sᶜ = {A : Fin m → Fin d → ℝ | ...}`).
+Once the measure's universe type is `Matrix ...`, these sets are of type
+`Set (Fin m → Fin d → ℝ)`, but the measure expects `Set (Matrix ...)`. The types
+are definitionally equal but tactics (`rw`, `simp`) require syntactic matching, not
+just definitional equality.
+
+**Conclusion**: With 2 bridge instances the error count drops to 5, all of which
+require touching specific proof-internal set definitions — roughly 5–8 targeted edits
+of the form "change `{A : Fin m → Fin d → ℝ | ...}` to `{A : Matrix (Fin m) (Fin d) ℝ | ...}`
+and update the corresponding `Yi`/`Xi` lambda types". This is Option A at reduced
+scope: a ~45-minute targeted edit, not a 2-hour full reconstruction.
+
+**JL.lean reverted** to clean state after experiments. All experiment changes
+discarded from Lean source; findings documented here only.
