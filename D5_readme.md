@@ -131,3 +131,30 @@ delays rather than solves the problem.
 **Option A** if D5 is targeted for the current PR submission.  
 **Option C** if timeline pressure is high — the Pi-type spelling is mathematically
 correct and the proof is complete; the refactor is purely stylistic.
+
+---
+
+## Experiment Log
+
+### Experiment 1 — Return-type-only change for `gaussianMatrixMeasure` (2026-04-07)
+
+**Hypothesis**: `Matrix (Fin m) (Fin d) ℝ` and `Fin m → Fin d → ℝ` are definitionally
+equal (`def Matrix m n α := m → n → α`). Therefore, changing only the declared return
+type of `gaussianMatrixMeasure` to `Measure (Matrix (Fin m) (Fin d) ℝ)` — while
+leaving the body identical — may compile without proof, because the elaborator can
+accept the kernel-level equality.
+
+If this compiles, Problem 1 (the `gaussianMatrixMeasure` mismatch) turns out to cost
+exactly one line, reducing D5 to a `Pi.*`→`Matrix.*` simp-set audit at the call sites.
+
+**Plan**:
+1. On `d5-matrix-type-refactor` branch, change only the return type annotation of
+   `gaussianMatrixMeasure` from `Measure (Fin m → Fin d → ℝ)` to
+   `Measure (Matrix (Fin m) (Fin d) ℝ)`.
+2. Run `lake build Contrib` and capture the full error list.
+3. If it compiles: proceed to spell the variable type as `Matrix` in `jl_union_bound`
+   and `johnson_lindenstrauss`, then run again and categorize remaining failures.
+4. If it does not compile: record the exact elaboration error — it will tell us whether
+   the body needs an explicit `show` cast or a genuine proof of measure transport.
+
+**Status**: In progress — see commits following this entry.
