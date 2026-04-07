@@ -19,12 +19,13 @@ Dasgupta, S. and Gupta, A. (2003). An elementary proof of a theorem of Johnson
 and Lindenstrauss. *Random Structures & Algorithms* 22(1), 60–65.
 -/
 
+namespace ProbabilityTheory
+
 /-- The MGF of `X²` for `X ∼ N(0,1)` equals `(1 − 2t)^{−1/2}`, valid for `t < 1/2`.
 
 Proof: write `mgf (·^2) γ t = ∫ x, (√(2π))⁻¹ · exp(−x²/2) · exp(t·x²) dx`,
 combine the exponentials to `exp(−((1−2t)/2)·x²)`, then apply the Gaussian
 integral formula `∫ exp(−a·x²) dx = √(π/a)` and simplify algebraically. -/
-open ProbabilityTheory in
 lemma mgf_sq_gaussianReal {t : ℝ} (ht : t < 1 / 2) :
     mgf (· ^ 2) (gaussianReal 0 1) t = (1 - 2 * t) ^ (-(1 / 2 : ℝ)) := by
   open Real in
@@ -47,3 +48,5 @@ lemma mgf_sq_gaussianReal {t : ℝ} (ht : t < 1 / 2) :
   · linarith
   · positivity
   · linarith
+
+end ProbabilityTheory

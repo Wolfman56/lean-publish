@@ -38,8 +38,8 @@ lemma log_one_add_le {ε : ℝ} (hε : -1 < ε) (hε1 : ε ≤ 1) :
       HasDerivAt g (e * (1 - e) / (2 * (1 + e))) e := fun e he => by
     have h1e : 0 < 1 + e := by linarith
     have hd1 : HasDerivAt (fun e => e) 1 e := hasDerivAt_id e
-    have hd2 : HasDerivAt (fun e => e ^ 2 / 4) (2 * e / 4) e :=
-      (simpa [pow_one] using hasDerivAt_pow 2 e).div_const 4
+    have hd2 : HasDerivAt (fun e => e ^ 2 / 4) (2 * e / 4) e := by
+      simpa [pow_one] using (hasDerivAt_pow 2 e).div_const 4
     have hd3 : HasDerivAt (fun e => Real.log (1 + e)) (1 + e)⁻¹ e := by
       have h := (Real.hasDerivAt_log h1e.ne').comp e
         ((hasDerivAt_const e 1).add (hasDerivAt_id e))
@@ -88,8 +88,8 @@ lemma log_one_sub_le {ε : ℝ} (hε0 : 0 ≤ ε) (hε1 : ε < 1) :
       HasDerivAt h (e * (1 + e) / (2 * (1 - e))) e := fun e he => by
     have h1e : 0 < 1 - e := by linarith
     have hd1 : HasDerivAt (fun e => -e) (-1 : ℝ) e := (hasDerivAt_id e).neg
-    have hd2 : HasDerivAt (fun e => e ^ 2 / 4) (2 * e / 4) e :=
-      (simpa [pow_one] using hasDerivAt_pow 2 e).div_const 4
+    have hd2 : HasDerivAt (fun e => e ^ 2 / 4) (2 * e / 4) e := by
+      simpa [pow_one] using (hasDerivAt_pow 2 e).div_const 4
     have hd3 : HasDerivAt (fun e => Real.log (1 - e)) (-(1 - e)⁻¹) e := by
       have h' := (Real.hasDerivAt_log h1e.ne').comp e
         ((hasDerivAt_const e 1).sub (hasDerivAt_id e))
