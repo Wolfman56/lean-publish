@@ -1,6 +1,8 @@
-import Mathlib.Probability.Moments.Basic
-import Mathlib.Probability.Distributions.Gaussian.Real
-import Mathlib.Analysis.SpecialFunctions.Exp
+module
+
+public import Mathlib.Probability.Moments.Basic
+public import Mathlib.Probability.Distributions.Gaussian.Real
+public import Mathlib.Analysis.SpecialFunctions.Exp
 
 /-!
 # MGF of the Square of a Standard Normal
@@ -18,6 +20,8 @@ Chernoff bound used in the Johnson–Lindenstrauss proof.
 Dasgupta, S. and Gupta, A. (2003). An elementary proof of a theorem of Johnson
 and Lindenstrauss. *Random Structures & Algorithms* 22(1), 60–65.
 -/
+
+@[expose] public section
 
 namespace ProbabilityTheory
 
@@ -50,3 +54,5 @@ lemma mgf_sq_gaussianReal {t : ℝ} (ht : t < 1 / 2) :
   · linarith
 
 end ProbabilityTheory
+
+end
