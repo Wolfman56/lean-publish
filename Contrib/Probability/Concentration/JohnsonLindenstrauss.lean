@@ -37,14 +37,42 @@ private lemma smul_mulVec_real {m d : ℕ} (c : ℝ) (M : Fin m → Fin d → �
   simp only [Pi.smul_apply, smul_eq_mul, ← Finset.mul_sum, mul_assoc]
 
 
+/-- Bridge: `Matrix (Fin m) (Fin d) ℝ` is definitionally equal to `Fin m → Fin d → ℝ`
+(`def Matrix m n α := m → n → α`), but Lean won't find Pi instances automatically
+through the opaque `def`. This instance makes `MeasurableSpace` available. -/
+instance Matrix.instMeasurableSpace {m n : Type*} {α : Type*} [MeasurableSpace α] :
+    MeasurableSpace (Matrix m n α) :=
+  inferInstanceAs (MeasurableSpace (m → n → α))
+
+/-- Bridge: `TopologicalSpace` for `Matrix m n α` via Pi topology. -/
+instance Matrix.instTopologicalSpace {m n : Type*} {α : Type*} [TopologicalSpace α] :
+    TopologicalSpace (Matrix m n α) :=
+  inferInstanceAs (TopologicalSpace (m → n → α))
+
+/-- Bridge: `BorelSpace` for `Matrix m n α` via Pi (requires `Fintype` for `Pi.borelSpace`). -/
+instance Matrix.instBorelSpace {m n : Type*} {α : Type*} [Fintype m] [Fintype n]
+    [TopologicalSpace α] [SecondCountableTopology α] [MeasurableSpace α] [BorelSpace α] :
+    BorelSpace (Matrix m n α) := by
+  haveI : BorelSpace (n → α) := Pi.borelSpace
+  exact inferInstanceAs (BorelSpace (m → n → α))
+
 /-- Gaussian i.i.d. product measure over `m × d` real matrices (each entry ~ N(0,1)).
 
 **Construction**: nested product of `ProbabilityTheory.gaussianReal 0 1` measures,
 one per entry, using `MeasureTheory.Measure.pi` twice (over rows, then columns). -/
 noncomputable def gaussianMatrixMeasure (m d : ℕ) :
-    MeasureTheory.Measure (Fin m → Fin d → ℝ) :=
+    MeasureTheory.Measure (Matrix (Fin m) (Fin d) ℝ) :=
   MeasureTheory.Measure.pi (fun _ : Fin m =>
     MeasureTheory.Measure.pi (fun _ : Fin d => ProbabilityTheory.gaussianReal 0 1))
+
+/-- Bridge: `IsProbabilityMeasure` for `gaussianMatrixMeasure`, routed through the
+Pi instance since `Matrix` is an opaque `def`. -/
+instance (m d : ℕ) :
+    MeasureTheory.IsProbabilityMeasure (gaussianMatrixMeasure m d) := by
+  show MeasureTheory.IsProbabilityMeasure
+    (MeasureTheory.Measure.pi (fun _ : Fin m =>
+      MeasureTheory.Measure.pi (fun _ : Fin d => ProbabilityTheory.gaussianReal 0 1)))
+  infer_instance
 
 /-- The marginal of `gaussianMatrixMeasure` along row `i` is the i.i.d. N(0,1)
 product measure on the `d` entries of that row. -/
@@ -145,13 +173,12 @@ lemma jl_chisq_complement_bound
     (ε : ℝ) (hε : 0 < ε) (hε' : ε < 1)
     (x : EuclideanSpace ℝ (Fin d)) (hx : ‖x‖ = 1) :
     (gaussianMatrixMeasure m d)
-        {A : Fin m → Fin d → ℝ |
+        {A : Matrix (Fin m) (Fin d) ℝ |
           (1 / Real.sqrt ↑m) ^ 2 *
             ‖(WithLp.equiv 2 (Fin m → ℝ)).symm (Matrix.mulVec A x)‖ ^ 2
             ∉ Set.Icc (1 - ε) (1 + ε)} ≤
     ENNReal.ofReal (2 * Real.exp (-(↑m * ε ^ 2 / 8))) := by
-  haveI hPM : MeasureTheory.IsProbabilityMeasure (gaussianMatrixMeasure m d) := by
-    simp only [gaussianMatrixMeasure]; infer_instance
+  haveI hPM : MeasureTheory.IsProbabilityMeasure (gaussianMatrixMeasure m d) := inferInstance
   have hm_real : (0 : ℝ) < m := Nat.cast_pos.mpr hm
   have hm_ne : (m : ℝ) ≠ 0 := hm_real.ne'
   let x' : Fin d → ℝ := fun j => x j
@@ -160,9 +187,9 @@ lemma jl_chisq_complement_bound
     rw [EuclideanSpace.norm_eq, Real.sq_sqrt
           (Finset.sum_nonneg fun i _ => sq_nonneg _)] at h1
     simpa [x', Real.norm_eq_abs, sq_abs] using h1
-  let Yi : Fin m → (Fin m → Fin d → ℝ) → ℝ := fun i A => ∑ j : Fin d, A i j * x' j
-  let Xi : Fin m → (Fin m → Fin d → ℝ) → ℝ := fun i A => Yi i A ^ 2
-  have hSqNorm : ∀ A : Fin m → Fin d → ℝ,
+  let Yi : Fin m → Matrix (Fin m) (Fin d) ℝ → ℝ := fun i A => ∑ j : Fin d, A i j * x' j
+  let Xi : Fin m → Matrix (Fin m) (Fin d) ℝ → ℝ := fun i A => Yi i A ^ 2
+  have hSqNorm : ∀ A : Matrix (Fin m) (Fin d) ℝ,
       (1 / Real.sqrt ↑m) ^ 2 *
         ‖(WithLp.equiv 2 (Fin m → ℝ)).symm (Matrix.mulVec A x)‖ ^ 2 =
       (1 / ↑m) * ∑ i : Fin m, Xi i A := by
@@ -177,7 +204,7 @@ lemma jl_chisq_complement_bound
     have h1 : (1 / Real.sqrt ↑m) ^ 2 = 1 / (↑m : ℝ) := by
       rw [div_pow, one_pow, Real.sq_sqrt (Nat.cast_nonneg m)]
     rw [h1]
-  have bad_eq : {A : Fin m → Fin d → ℝ |
+  have bad_eq : {A : Matrix (Fin m) (Fin d) ℝ |
       (1 / Real.sqrt ↑m) ^ 2 *
         ‖(WithLp.equiv 2 (Fin m → ℝ)).symm (Matrix.mulVec A x)‖ ^ 2
         ∉ Set.Icc (1 - ε) (1 + ε)} =
@@ -213,7 +240,7 @@ lemma jl_chisq_complement_bound
           rw [← one_div] at key
           linarith)
   rw [bad_eq]
-  have bad_subset : {A : Fin m → Fin d → ℝ | ∑ i : Fin m, Xi i A ∉ Set.Icc (↑m * (1 - ε)) (↑m * (1 + ε))} ⊆
+  have bad_subset : {A : Matrix (Fin m) (Fin d) ℝ | ∑ i : Fin m, Xi i A ∉ Set.Icc (↑m * (1 - ε)) (↑m * (1 + ε))} ⊆
       {A | ↑m * (1 + ε) < ∑ i : Fin m, Xi i A} ∪
       {A | ∑ i : Fin m, Xi i A < ↑m * (1 - ε)} := by
     intro A hA
@@ -247,11 +274,17 @@ lemma jl_chisq_complement_bound
     have hmap : (gaussianMatrixMeasure m d).map (Yi i) = ProbabilityTheory.gaussianReal 0 1 := by
       have hrow := gaussianMatrixMeasure_row_map m d i
       have hdot := gaussianRow_dotProduct_map x' hx'
-      rw [show Yi i = (fun v : Fin d → ℝ => ∑ j : Fin d, v j * x' j) ∘ (fun A => A i) from rfl]
-      rw [← MeasureTheory.Measure.map_map
-            (Finset.measurable_sum _ (fun j _ =>
-              (measurable_pi_apply j).mul measurable_const)) (measurable_pi_apply i)]
-      rw [hrow, hdot]
+      have h_meas_i : Measurable (fun A : Matrix (Fin m) (Fin d) ℝ => A i) := measurable_pi_apply i
+      simp only [Yi]
+      rw [show (fun A : Matrix (Fin m) (Fin d) ℝ => ∑ j : Fin d, A i j * x' j) =
+              (fun v : Fin d → ℝ => ∑ j : Fin d, v j * x' j) ∘ (fun A => A i) from rfl,
+          ← MeasureTheory.Measure.map_map
+            (Finset.measurable_sum _ (fun j _ => (measurable_pi_apply j).mul measurable_const))
+            h_meas_i,
+          show (gaussianMatrixMeasure m d).map (fun A : Matrix (Fin m) (Fin d) ℝ => A i) =
+              MeasureTheory.Measure.pi (fun _ : Fin d => ProbabilityTheory.gaussianReal 0 1)
+              from hrow]
+      exact hdot
     rw [show ProbabilityTheory.mgf (Xi i) (gaussianMatrixMeasure m d) t =
          ProbabilityTheory.mgf (fun y : ℝ => y ^ 2) ((gaussianMatrixMeasure m d).map (Yi i)) t from
        (ProbabilityTheory.mgf_map (hYi_meas i).aemeasurable
@@ -273,14 +306,14 @@ lemma jl_chisq_complement_bound
         (gaussianMatrixMeasure m d) := by
     intro t ht_nn ht
     by_contra h_not_int
-    have h0 : ∫ A : Fin m → Fin d → ℝ, Real.exp (t * ∑ i : Fin m, Xi i A)
+    have h0 : ∫ A, Real.exp (t * ∑ i : Fin m, Xi i A)
         ∂(gaussianMatrixMeasure m d) = 0 :=
       MeasureTheory.integral_undef h_not_int
-    have hmgf_int : ∫ A : Fin m → Fin d → ℝ, Real.exp (t * ∑ i : Fin m, Xi i A)
-        ∂(gaussianMatrixMeasure m d) = (1 - 2 * t) ^ (-(↑m / 2 : ℝ)) := by
-      have hfun : (fun A : Fin m → Fin d → ℝ => ∑ i : Fin m, Xi i A) = ∑ i : Fin m, Xi i :=
+    have hmgf_int : ∫ A, Real.exp (t * ∑ i : Fin m, Xi i A)
+        ∂(gaussianMatrixMeasure m d) = (1 - 2 * t) ^ (-((↑m : ℝ) / 2)) := by
+      have hfun : (fun A => ∑ i : Fin m, Xi i A) = ∑ i : Fin m, Xi i :=
         funext fun A => (Finset.sum_apply A Finset.univ Xi).symm
-      have hval : ProbabilityTheory.mgf (fun A : Fin m → Fin d → ℝ => ∑ i : Fin m, Xi i A)
+      have hval : ProbabilityTheory.mgf (fun A => ∑ i : Fin m, Xi i A)
           (gaussianMatrixMeasure m d) t = (1 - 2 * t) ^ (-(↑m / 2 : ℝ)) := by
         rw [hfun]; exact hSum_mgf t ht
       simp only [ProbabilityTheory.mgf] at hval
@@ -303,9 +336,9 @@ lemma jl_chisq_complement_bound
         (↑m * (1 + ε)) (t := t_u) ht_u_pos.le (X := fun A => ∑ i : Fin m, Xi i A)
         (μ := gaussianMatrixMeasure m d)
         (hInt_upper t_u ht_u_pos.le ht_u_half)
-    have hmgf_u : ProbabilityTheory.mgf (fun A : Fin m → Fin d → ℝ => ∑ i : Fin m, Xi i A)
+    have hmgf_u : ProbabilityTheory.mgf (fun A => ∑ i : Fin m, Xi i A)
         (gaussianMatrixMeasure m d) t_u = (1 - 2 * t_u) ^ (-((↑m : ℝ) / 2)) := by
-      have hfun : (fun A : Fin m → Fin d → ℝ => ∑ i : Fin m, Xi i A) = ∑ i : Fin m, Xi i :=
+      have hfun : (fun A => ∑ i : Fin m, Xi i A) = ∑ i : Fin m, Xi i :=
         funext fun A => (Finset.sum_apply A Finset.univ Xi).symm
       rw [hfun]; exact hSum_mgf t_u ht_u_half
     rw [hmgf_u] at hChern
@@ -327,12 +360,12 @@ lemma jl_chisq_complement_bound
       apply Real.exp_le_exp.mpr
       nlinarith [mul_le_mul_of_nonneg_left hlog (by positivity : (0 : ℝ) ≤ ↑m / 2)]
     have hfin : (gaussianMatrixMeasure m d)
-        {A : Fin m → Fin d → ℝ | ↑m * (1 + ε) < ∑ i : Fin m, Xi i A} ≠ ⊤ :=
+        {A | ↑m * (1 + ε) < ∑ i : Fin m, Xi i A} ≠ ⊤ :=
       MeasureTheory.measure_ne_top _ _
     rw [← ENNReal.ofReal_toReal hfin]
     apply ENNReal.ofReal_le_ofReal
     have key : (gaussianMatrixMeasure m d).real
-        {A : Fin m → Fin d → ℝ | ↑m * (1 + ε) ≤ ∑ i : Fin m, Xi i A} ≤
+        {A | ↑m * (1 + ε) ≤ ∑ i : Fin m, Xi i A} ≤
         Real.exp (-(↑m * ε ^ 2 / 8)) :=
       (hChern.trans (by exact_mod_cast hbound)).trans (by rfl)
     calc (gaussianMatrixMeasure m d).real {A | ↑m * (1 + ε) < ∑ i : Fin m, Xi i A}
@@ -361,12 +394,12 @@ lemma jl_chisq_complement_bound
           · exact (Real.measurable_exp.comp (measurable_const.mul
               (Finset.measurable_sum Finset.univ (fun i _ => hXi_meas i)))).aestronglyMeasurable
           · filter_upwards with A
-            simp only [Real.norm_eq_abs, norm_one, abs_of_pos (Real.exp_pos _)]
+            simp only [Real.norm_eq_abs, abs_of_pos (Real.exp_pos _)]
             exact Real.exp_le_one_iff.mpr (mul_nonpos_of_nonpos_of_nonneg ht_l_neg.le
               (Finset.sum_nonneg (fun i _ => sq_nonneg (Yi i A)))))
-    have hmgf_l : ProbabilityTheory.mgf (fun A : Fin m → Fin d → ℝ => ∑ i : Fin m, Xi i A)
+    have hmgf_l : ProbabilityTheory.mgf (fun A => ∑ i : Fin m, Xi i A)
         (gaussianMatrixMeasure m d) t_l = (1 - 2 * t_l) ^ (-((↑m : ℝ) / 2)) := by
-      have hfun : (fun A : Fin m → Fin d → ℝ => ∑ i : Fin m, Xi i A) = ∑ i : Fin m, Xi i :=
+      have hfun : (fun A => ∑ i : Fin m, Xi i A) = ∑ i : Fin m, Xi i :=
         funext fun A => (Finset.sum_apply A Finset.univ Xi).symm
       rw [hfun]; exact hSum_mgf t_l ht_l_half
     rw [hmgf_l] at hChern
@@ -432,18 +465,16 @@ lemma jl_concentration_single_pair
             ‖(WithLp.equiv 2 (Fin m → ℝ)).symm (Matrix.mulVec A x)‖ ^ 2
             ∈ Set.Icc (1 - ε) (1 + ε)} ≥
     ENNReal.ofReal (1 - 2 * Real.exp (-(↑m * ε ^ 2 / 8))) := by
-  set S : Set (Fin m → Fin d → ℝ) := {A |
+  set S : Set (Matrix (Fin m) (Fin d) ℝ) := {A |
     (1 / Real.sqrt ↑m) ^ 2 *
       ‖(WithLp.equiv 2 (Fin m → ℝ)).symm (Matrix.mulVec A x)‖ ^ 2
       ∈ Set.Icc (1 - ε) (1 + ε)} with hS_def
   have hS_meas : MeasurableSet S := by
     simp only [hS_def]; measurability
-  haveI hPM : MeasureTheory.IsProbabilityMeasure (gaussianMatrixMeasure m d) := by
-    simp only [gaussianMatrixMeasure]
-    infer_instance
+  haveI hPM : MeasureTheory.IsProbabilityMeasure (gaussianMatrixMeasure m d) := inferInstance
   have hSc : (gaussianMatrixMeasure m d) Sᶜ ≤
       ENNReal.ofReal (2 * Real.exp (-(↑m * ε ^ 2 / 8))) := by
-    have hset : Sᶜ = {A : Fin m → Fin d → ℝ |
+    have hset : Sᶜ = {A : Matrix (Fin m) (Fin d) ℝ |
         (1 / Real.sqrt ↑m) ^ 2 *
           ‖(WithLp.equiv 2 (Fin m → ℝ)).symm (Matrix.mulVec A x)‖ ^ 2
           ∉ Set.Icc (1 - ε) (1 + ε)} :=
@@ -488,9 +519,9 @@ lemma jl_union_bound
   by_cases hS : S.card ≤ 1
   · exact ⟨0, fun u hu v hv huv =>
       absurd (Finset.card_le_one.mp hS u hu v hv) huv⟩
-  · push_neg at hS
+  · push Not at hS
 
-    set Good : Set (Fin m → Fin d → ℝ) :=
+    set Good : Set (Matrix (Fin m) (Fin d) ℝ) :=
       {A | ∀ u ∈ S, ∀ v ∈ S, u ≠ v →
         (1 - ε) * ‖u - v‖ ^ 2 ≤
           (1 / Real.sqrt ↑m) ^ 2 *
@@ -499,8 +530,7 @@ lemma jl_union_bound
             ‖(WithLp.equiv 2 (Fin m → ℝ)).symm (Matrix.mulVec A (u - v))‖ ^ 2 ≤
           (1 + ε) * ‖u - v‖ ^ 2}
     have hGood_pos : 0 < gaussianMatrixMeasure m d Good := by
-      haveI hPM : MeasureTheory.IsProbabilityMeasure (gaussianMatrixMeasure m d) := by
-        simp only [gaussianMatrixMeasure]; infer_instance
+      haveI hPM : MeasureTheory.IsProbabilityMeasure (gaussianMatrixMeasure m d) := inferInstance
       have hm_pos : 0 < m := by
         rcases Nat.eq_zero_or_pos m with rfl | h
         · simp only [Nat.cast_zero, gt_iff_lt] at hm
@@ -516,7 +546,7 @@ lemma jl_union_bound
       have hGood_meas : MeasurableSet Good := by
         suffices h : IsClosed Good from h.measurableSet
         have heq : Good = ⋂ p ∈ S.offDiag,
-            {A : Fin m → Fin d → ℝ |
+            {A : Matrix (Fin m) (Fin d) ℝ |
               (1 - ε) * ‖p.1 - p.2‖ ^ 2 ≤
                 (1 / Real.sqrt ↑m) ^ 2 *
                   ‖(WithLp.equiv 2 (Fin m → ℝ)).symm (Matrix.mulVec A (p.1 - p.2))‖ ^ 2 ∧
@@ -530,7 +560,7 @@ lemma jl_union_bound
         rw [heq]
         apply isClosed_biInter
         intro p _
-        have hcont : Continuous (fun A : Fin m → Fin d → ℝ =>
+        have hcont : Continuous (fun A : Matrix (Fin m) (Fin d) ℝ =>
             (1 / Real.sqrt ↑m) ^ 2 *
               ‖(WithLp.equiv 2 (Fin m → ℝ)).symm (Matrix.mulVec A (p.1 - p.2))‖ ^ 2) := by
           apply Continuous.mul continuous_const
@@ -540,19 +570,19 @@ lemma jl_union_bound
           · exact (PiLp.continuousLinearEquiv 2 ℝ (fun _ : Fin m => ℝ)).symm.continuous
           · apply continuous_pi
             intro i
-            rw [show (fun A : Fin m → Fin d → ℝ => Matrix.mulVec A (p.1 - p.2) i) =
-                  (fun A : Fin m → Fin d → ℝ => ∑ j : Fin d, A i j * (p.1 - p.2) j) from
+            rw [show (fun A : Matrix (Fin m) (Fin d) ℝ => Matrix.mulVec A (p.1 - p.2) i) =
+                  (fun A : Matrix (Fin m) (Fin d) ℝ => ∑ j : Fin d, A i j * (p.1 - p.2) j) from
                 funext fun A => rfl]
             apply continuous_finset_sum
             intro j _
             exact ((continuous_apply j : Continuous (fun g : Fin d → ℝ => g j)).mul
               continuous_const).comp
-              (continuous_apply i : Continuous (fun A : Fin m → Fin d → ℝ => A i))
+              (continuous_apply i : Continuous (fun A : Matrix (Fin m) (Fin d) ℝ => A i))
         apply IsClosed.inter
         · exact isClosed_le continuous_const hcont
         · exact isClosed_le hcont continuous_const
       let Bad : EuclideanSpace ℝ (Fin d) × EuclideanSpace ℝ (Fin d) →
-          Set (Fin m → Fin d → ℝ) :=
+          Set (Matrix (Fin m) (Fin d) ℝ) :=
         fun p => {A | (1 / Real.sqrt ↑m) ^ 2 *
             ‖(WithLp.equiv 2 (Fin m → ℝ)).symm (Matrix.mulVec A (p.1 - p.2))‖ ^ 2
             ∉ Set.Icc ((1 - ε) * ‖p.1 - p.2‖ ^ 2) ((1 + ε) * ‖p.1 - p.2‖ ^ 2)}
@@ -581,11 +611,11 @@ lemma jl_union_bound
           simp only [Pi.sub_apply, Pi.smul_apply, smul_eq_mul, w,
                      PiLp.smul_apply, PiLp.sub_apply, smul_eq_mul]
           field_simp [hnorm_ne]
-        have hmv : ∀ A : Fin m → Fin d → ℝ,
+        have hmv : ∀ A : Matrix (Fin m) (Fin d) ℝ,
             Matrix.mulVec A (u.ofLp - v.ofLp) = ‖u - v‖ • Matrix.mulVec A w.ofLp := fun A => by
           nth_rw 1 [hdiff]
           exact (Matrix.mulVecLin A).map_smul _ _
-        have hsubset_pair : Bad (u, v) ⊆ {A : Fin m → Fin d → ℝ |
+        have hsubset_pair : Bad (u, v) ⊆ {A : Matrix (Fin m) (Fin d) ℝ |
             (1 / Real.sqrt ↑m) ^ 2 *
               ‖(WithLp.equiv 2 (Fin m → ℝ)).symm (Matrix.mulVec A w)‖ ^ 2
               ∉ Set.Icc (1 - ε) (1 + ε)} := by
@@ -614,7 +644,7 @@ lemma jl_union_bound
           · left; nlinarith
           · right; nlinarith
         calc gaussianMatrixMeasure m d (Bad (u, v))
-            ≤ gaussianMatrixMeasure m d {A : Fin m → Fin d → ℝ |
+            ≤ gaussianMatrixMeasure m d {A : Matrix (Fin m) (Fin d) ℝ |
                 (1 / Real.sqrt ↑m) ^ 2 *
                   ‖(WithLp.equiv 2 (Fin m → ℝ)).symm (Matrix.mulVec A w)‖ ^ 2
                   ∉ Set.Icc (1 - ε) (1 + ε)} :=
