@@ -257,7 +257,7 @@ lemma jl_chisq_complement_bound
        (ProbabilityTheory.mgf_map (hYi_meas i).aemeasurable
          (((measurable_id.pow_const 2).const_mul t).exp.aestronglyMeasurable)).symm,
      hmap]
-    exact mgf_sq_gaussianReal ht
+    exact ProbabilityTheory.mgf_sq_gaussianReal ht
   have hSum_mgf : ∀ t : ℝ, t < 1 / 2 →
       ProbabilityTheory.mgf (∑ i : Fin m, Xi i) (gaussianMatrixMeasure m d) t =
       (1 - 2 * t) ^ (-(↑m / 2 : ℝ)) := by
