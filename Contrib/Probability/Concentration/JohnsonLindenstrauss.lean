@@ -463,7 +463,7 @@ lemma jl_concentration_single_pair
     _ ≤ 1 - (gaussianMatrixMeasure m d) Sᶜ := by gcongr
     _ = (gaussianMatrixMeasure m d) S := hS_eq.symm
 
-/-- With `m ≥ 8ε⁻² · log(n(n−1))` projection dimensions a single random Gaussian
+/-- With `m ≥ 24ε⁻² · log n` projection dimensions a single random Gaussian
 matrix preserves **all** pairwise distances simultaneously (union bound).
 
 **Proof sketch:**
@@ -476,7 +476,7 @@ lemma jl_union_bound
     (ε : ℝ) (hε : 0 < ε) (hε' : ε < 1)
     (S : Finset (EuclideanSpace ℝ (Fin d)))
     (m : ℕ)
-    (hm : (↑m : ℝ) > 8 * ε⁻¹ ^ 2 * Real.log (2 * ↑S.card * (↑S.card - 1))) :
+    (hm : (↑m : ℝ) > 24 / ε ^ 2 * Real.log ↑S.card) :
     ∃ A : Fin m → Fin d → ℝ,
       ∀ u ∈ S, ∀ v ∈ S, u ≠ v →
         (1 - ε) * ‖u - v‖ ^ 2 ≤
@@ -505,10 +505,9 @@ lemma jl_union_bound
         rcases Nat.eq_zero_or_pos m with rfl | h
         · simp only [Nat.cast_zero, gt_iff_lt] at hm
           have h2' : (2 : ℝ) ≤ ↑S.card := by exact_mod_cast Nat.succ_le_of_lt hS
-          have hlog : (0 : ℝ) ≤ Real.log (2 * ↑S.card * (↑S.card - 1)) := by
-            apply Real.log_nonneg; nlinarith
-          linarith [mul_nonneg (mul_nonneg (by norm_num : (0:ℝ) ≤ 8)
-            (by positivity : (0:ℝ) ≤ ε⁻¹ ^ 2)) hlog]
+          have hlog : (0 : ℝ) ≤ Real.log ↑S.card := Real.log_nonneg (by linarith)
+          linarith [mul_nonneg (div_nonneg (by norm_num : (0:ℝ) ≤ 24)
+            (by positivity : (0:ℝ) ≤ ε ^ 2)) hlog]
         · exact h
       have h2 : (2 : ℝ) ≤ ↑S.card := by exact_mod_cast Nat.succ_le_of_lt hS
       have hn_pos : (0 : ℝ) < ↑S.card * (↑S.card - 1) := by nlinarith
@@ -639,10 +638,18 @@ lemma jl_union_bound
         have hrw : (↑S.card : ℝ) * ((↑S.card : ℝ) - 1) * (2 * Real.exp (-(↑m * ε ^ 2 / 8))) =
             2 * (↑S.card : ℝ) * ((↑S.card : ℝ) - 1) * Real.exp (-(↑m * ε ^ 2 / 8)) := by ring
         rw [hcard, hrw]
+        have hlog3 : Real.log (2 * ↑S.card * (↑S.card - 1)) ≤ 3 * Real.log ↑S.card := by
+          have hn_pos : (0 : ℝ) < ↑S.card := by linarith [h2]
+          have hcube : 2 * (↑S.card : ℝ) * (↑S.card - 1) ≤ (↑S.card) ^ 3 := by
+            nlinarith [sq_nonneg (↑S.card - 1 : ℝ)]
+          calc Real.log (2 * ↑S.card * (↑S.card - 1))
+              ≤ Real.log (↑S.card ^ 3) := Real.log_le_log h2n_pos hcube
+            _ = 3 * Real.log ↑S.card := by rw [Real.log_pow]; push_cast; ring
         have hlog_lt : Real.log (2 * ↑S.card * (↑S.card - 1)) < ↑m * ε ^ 2 / 8 := by
           calc Real.log (2 * ↑S.card * (↑S.card - 1))
-              = ε ^ 2 / 8 * (8 * ε⁻¹ ^ 2 * Real.log (2 * ↑S.card * (↑S.card - 1))) := by
-                  rw [inv_pow]; field_simp [ne_of_gt hε2_pos]
+              ≤ 3 * Real.log ↑S.card := hlog3
+            _ = ε ^ 2 / 8 * (24 / ε ^ 2 * Real.log ↑S.card) := by
+                  field_simp [ne_of_gt hε2_pos]; ring
             _ < ε ^ 2 / 8 * ↑m := mul_lt_mul_of_pos_left hm (by positivity)
             _ = ↑m * ε ^ 2 / 8 := by ring
         have h2n_ne : (2 : ℝ) * ↑S.card * (↑S.card - 1) ≠ 0 := ne_of_gt h2n_pos
@@ -683,17 +690,13 @@ dimension `d`. A scaled random Gaussian matrix witnesses existence.
 **NOTE on squared norms:** the conclusion uses `‖f u − f v‖²` (squared distances)
 rather than `‖f u − f v‖`. Both forms are equivalent for non-negative quantities;
 squared norms arise naturally from the chi-squared proof and avoid a `Real.sqrt`
-step. The distance form follows immediately by taking square roots.
-
-**NOTE on hypothesis:** `hm` requires `m > 8ε⁻² log(n(n−1))` while the classical
-statement uses `log n`. For `n ≥ 2` these agree up to a constant; the current
-form matches `jl_union_bound` exactly. -/
+step. The distance form follows immediately by taking square roots. -/
 theorem johnson_lindenstrauss
     {d : ℕ}
     (ε : ℝ) (hε : 0 < ε) (hε' : ε < 1)
     (S : Finset (EuclideanSpace ℝ (Fin d)))
     (m : ℕ)
-    (hm : (↑m : ℝ) > 8 * ε⁻¹ ^ 2 * Real.log (2 * ↑S.card * (↑S.card - 1))) :
+    (hm : (↑m : ℝ) > 24 / ε ^ 2 * Real.log ↑S.card) :
     ∃ (f : EuclideanSpace ℝ (Fin d) →ₗ[ℝ] EuclideanSpace ℝ (Fin m)),
       ∀ u ∈ S, ∀ v ∈ S,
         (1 - ε) * ‖u - v‖ ^ 2 ≤ ‖f u - f v‖ ^ 2 ∧
