@@ -40,17 +40,17 @@ private lemma smul_mulVec_real {m d : ℕ} (c : ℝ) (M : Fin m → Fin d → �
 /-- Bridge: `Matrix (Fin m) (Fin d) ℝ` is definitionally equal to `Fin m → Fin d → ℝ`
 (`def Matrix m n α := m → n → α`), but Lean won't find Pi instances automatically
 through the opaque `def`. This instance makes `MeasurableSpace` available. -/
-instance {m n : Type*} {α : Type*} [MeasurableSpace α] :
+instance Matrix.instMeasurableSpace {m n : Type*} {α : Type*} [MeasurableSpace α] :
     MeasurableSpace (Matrix m n α) :=
   inferInstanceAs (MeasurableSpace (m → n → α))
 
 /-- Bridge: `TopologicalSpace` for `Matrix m n α` via Pi topology. -/
-instance {m n : Type*} {α : Type*} [TopologicalSpace α] :
+instance Matrix.instTopologicalSpace {m n : Type*} {α : Type*} [TopologicalSpace α] :
     TopologicalSpace (Matrix m n α) :=
   inferInstanceAs (TopologicalSpace (m → n → α))
 
 /-- Bridge: `BorelSpace` for `Matrix m n α` via Pi (requires `Fintype` for `Pi.borelSpace`). -/
-instance {m n : Type*} {α : Type*} [Fintype m] [Fintype n]
+instance Matrix.instBorelSpace {m n : Type*} {α : Type*} [Fintype m] [Fintype n]
     [TopologicalSpace α] [SecondCountableTopology α] [MeasurableSpace α] [BorelSpace α] :
     BorelSpace (Matrix m n α) := by
   haveI : BorelSpace (n → α) := Pi.borelSpace
