@@ -217,3 +217,53 @@ scope: a ~45-minute targeted edit, not a 2-hour full reconstruction.
 
 **JL.lean reverted** to clean state after experiments. All experiment changes
 discarded from Lean source; findings documented here only.
+
+---
+
+### Experiment 2 — Step 1 + Step 2: full Matrix type at all set sites (2026-04-07)
+
+**Status: COMPLETE — clean build achieved** (`c22a0f7`, on `d5-matrix-type-refactor`).
+
+#### Step 1 (committed `b747507`)
+- Add three bridge instances:
+  - `MeasurableSpace (Matrix m n α)` via `inferInstanceAs (MeasurableSpace (m → n → α))`
+  - `TopologicalSpace (Matrix m n α)` via `inferInstanceAs (TopologicalSpace (m → n → α))`
+  - `BorelSpace (Matrix m n α) [Fintype m] [Fintype n]` via `Pi.borelSpace` (needed by
+    `measurability` tactic; `OpensMeasurableSpace` follows from `BorelSpace`)
+- Change `gaussianMatrixMeasure` return type to `Measure (Matrix (Fin m) (Fin d) ℝ)`.
+- Add `IsProbabilityMeasure` bridge via `show` cast to Pi form + `infer_instance`.
+
+#### Step 2 (committed `c22a0f7`)
+Changed every `{A : Fin m → Fin d → ℝ | …}` annotation and local `Yi`/`Xi` definition
+to `Matrix (Fin m) (Fin d) ℝ`. Non-trivial engineering challenges encountered:
+
+| Challenge | Resolution |
+|-----------|-----------|
+| `rw [hrow]` fails: `fun A : Matrix … => A i` vs `Function.eval i : Pi → …` | Use `h_meas_i : Measurable (fun A : Matrix … => A i) := measurable_pi_apply i` (kernel accepts via `def`-eq); then `rw [← map_map h_sum h_meas_i, show map … from hrow]` |
+| `rw [show Yi i = … from rfl]` fails | `Yi` is a `let`-binding; `rw` cannot find the pattern in the reduced goal. Fix: `simp only [Yi]` first to unfold the binding, exposing the explicit lambda |
+| `BorelSpace (m → n → α)` synthesis fails with `[Countable m]` | Requires `[Fintype m] [Fintype n] [SecondCountableTopology α]` to chain through `Pi.borelSpace` twice; one `haveI` pre-step needed |
+| `rw [map_map]` direction wrong | After `simp only [Yi]` the goal has `map (g ∘ f) μ` form; need `← map_map` not `map_map` |
+| `hmgf_u` type annotation `fun A : Pi =>` | Must remove explicit annotation and let Lean infer `A : Matrix` from `Xi i : Matrix → ℝ`; then `rw [hmgf_u] at hChern` succeeds |
+| `hfin`/`key` set-type mismatch with `IsFiniteMeasure` | Removing Pi annotation from `{A : Pi | …}` lets Lean infer `A : Matrix` (from `Xi i`) so the measure application type-matches |
+
+#### Key Lessons for D5-style refactors in Lean 4
+
+1. **`rw` uses reducible transparency**: `def Matrix ≡ Fin m → Fin d → ℝ` at the kernel level
+   but `rw` cannot match across that boundary. All patterns must *syntactically* use the
+   same spelling. The fix is consistent typing — not `show`/coercing inside `rw`.
+
+2. **`exact e` can bridge where `rw [show … from e]` fails**: The Lean 4 kernel unfolds
+   `def`s for elaboration of `exact`, while `rw` performs `kabstract` at reducible
+   transparency. If a hypothesis `h` is definitionally equal (but not syntactically equal)
+   to the goal, `exact h` often works; `rw [show goal from h]` often doesn't.
+
+3. **`let`-bindings reduce in goals**: `let Yi := …` means the tactic goal may show the
+   reduced form. `rw [show Yi i = …]` fails because `Yi i` is not a subterm of the
+   reduced goal. Use `simp only [Yi]` to unfold explicitly first.
+
+4. **`BorelSpace` beats `OpensMeasurableSpace` for Pi synthesis**: `Pi.borelSpace`
+   requires `[Fintype ι]`; `Pi.opensMeasurableSpace` (if it exists) requires
+   `[Countable ι]`. But in practice `inferInstanceAs (OpensMeasurableSpace (m → n → α))`
+   fails even with `[Countable m] [Countable n]` — the synthesis chain bottlenecks on
+   intermediate types. Going through `BorelSpace` with explicit `haveI` steps is reliable.
+
