@@ -9,6 +9,29 @@ Reviewer models: hand this file to each model and collect feedback verbatim.
 
 ---
 
+## How to Submit Feedback
+
+**Your response must be a single, self-contained markdown document** — no
+inline replies woven into this file. The output should be immediately
+paste-able into a GitHub comment, a Zulip message, or a new `.md` file
+without further editing.
+
+Use the template at the bottom of this file (§ "Feedback Template"). Copy it,
+fill it in, and return the completed document. Specifically:
+
+- Give a verdict for **every checklist item** in the order listed.
+- For each issue you flag as `fix now` or `fix before merge`, provide the
+  corrected Lean 4 code inline in a fenced ` ```lean ``` ` block.
+- Do not skip items — write `leave as-is` with a one-line justification if
+  no change is needed.
+- Rate overall readiness on a 1–5 scale at the top (1 = major blockers,
+  5 = mergeable as-is).
+- Keep the document under ~600 lines. Inline code blocks count toward length.
+
+---
+
+---
+
 ## What Has Been Done
 
 ### Alex Meiburg (Zulip) feedback — fully addressed
@@ -329,3 +352,209 @@ rotation lemma exists.
 
 Build: ✅ `lake build Contrib` exits 0, 0 warnings (Lean v4.30.0-rc1,
 Mathlib master `35186be`).
+
+---
+
+## Feedback Template
+
+Copy everything from the horizontal rule below through the end of this
+document. Delete these two instruction lines, fill in every section, and
+return the completed markdown.
+
+---
+
+# PR #37705 Review — [Model Name / Reviewer ID] — [Date]
+
+**Readiness rating:** [1–5]  
+**Summary (2–3 sentences):**
+
+---
+
+### A1 — `push Not` vs `push_neg`
+
+**Verdict:** [fix now | fix before merge | optional | leave as-is]  
+**Finding:**
+
+```lean
+-- corrected code if applicable
+```
+
+---
+
+### A2 — `integral_gaussian` without explicit argument
+
+**Verdict:** [fix now | fix before merge | optional | leave as-is]  
+**Finding:**
+
+```lean
+-- corrected code if applicable
+```
+
+---
+
+### A3 — `EuclideanSpace.real_norm_sq_eq` existence
+
+**Verdict:** [confirmed exists | name mismatch — correct name is X | unable to verify]  
+**Finding:**
+
+---
+
+### B1 — Namespace for `mgf_sq_gaussianReal`
+
+**Verdict:** [fix now | fix before merge | optional | leave as-is]  
+**Finding:**
+
+```lean
+-- corrected namespace if applicable
+```
+
+---
+
+### B2 — `Real.log` inside `namespace Real`
+
+**Verdict:** [fix now | fix before merge | optional | leave as-is]  
+**Finding:**
+
+---
+
+### B3 — `ε⁻¹ ^ 2` vs `8 / ε ^ 2`
+
+**Verdict:** [fix now | fix before merge | optional | leave as-is]  
+**Finding:**
+
+```lean
+-- preferred hypothesis form if applicable
+```
+
+---
+
+### B4 — Module doc `Contrib.*` reference
+
+**Verdict:** [fix now | fix before merge | optional | leave as-is]  
+**Finding:**
+
+---
+
+### C1 — Shared structure between the two log lemmas
+
+**Verdict:** [fix now | fix before merge | optional | leave as-is]  
+**Finding:**
+
+```lean
+-- proposed shared helper if applicable
+```
+
+---
+
+### C2 — `bad_eq` biconditional verbosity
+
+**Verdict:** [fix now | fix before merge | optional | leave as-is]  
+**Finding:**
+
+```lean
+-- simplified proof sketch if applicable
+```
+
+---
+
+### C3 — `hnorm_eq` duplication (`set f`)
+
+**Verdict:** [fix now | fix before merge | optional | leave as-is]  
+**Finding:**
+
+---
+
+### C4 — `gaussianRow_dotProduct_map` — existing Mathlib API
+
+**Verdict:** [existing lemma found — use X | no existing lemma | unable to verify]  
+**Finding:**
+
+```lean
+-- replacement if existing API found
+```
+
+---
+
+### C5 — `hInt_upper` integrability by contradiction
+
+**Verdict:** [fix now | fix before merge | optional | leave as-is]  
+**Finding:**
+
+```lean
+-- direct proof sketch if applicable
+```
+
+---
+
+### D1 — Log bound constants: `ε²/4` vs `ε²/2`
+
+**Verdict:** [keep ε²/4 as-is | add ε²/2 variant | change to ε²/2]  
+**Finding:**
+
+---
+
+### D2 — `log(n(n-1))` vs `log n` in `hm` hypothesis
+
+**Verdict:** [keep as-is | change hypothesis form]  
+**Finding:**
+
+```lean
+-- preferred hypothesis form if changing
+```
+
+---
+
+### D3 — `smul_mulVec_real` already in Mathlib?
+
+**Verdict:** [exists — use X | does not exist | unable to verify]  
+**Finding:**
+
+```lean
+-- replacement one-liner if exists
+```
+
+---
+
+### D4 — Squared vs distance form of JL conclusion
+
+**Verdict:** [fix now | fix before merge | add note | leave as-is]  
+**Finding:**
+
+```lean
+-- distance-form conclusion if proposing change
+```
+
+---
+
+### D5 — `Fin m → Fin d → ℝ` vs `Matrix (Fin m) (Fin d) ℝ`
+
+**Verdict:** [fix now | fix before merge | optional | leave as-is]  
+**Finding:**
+
+---
+
+### Checklist items (quick verdicts)
+
+| Item | Verdict | One-line note |
+|------|---------|---------------|
+| A1 `push Not` | | |
+| A2 `integral_gaussian` arg | | |
+| A3 `real_norm_sq_eq` exists | | |
+| B1 `mgf_sq_gaussianReal` namespace | | |
+| B4 `Contrib.*` → `Mathlib.*` in module doc | | |
+| D3 `smul_mulVec_real` in Mathlib | | |
+| D4 squared vs distance JL | | |
+
+---
+
+### Additional issues not in the baton
+
+_List any concerns not covered above._
+
+---
+
+### Suggested Zulip reply text
+
+_Provide a ready-to-paste Zulip reply summarising the fixes made and
+any remaining open questions for the Mathlib reviewers. Keep under 200 words._
+
