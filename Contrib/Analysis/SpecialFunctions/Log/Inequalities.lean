@@ -13,7 +13,7 @@ Chernoff bounds for the Johnson–Lindenstrauss lemma.
 * `Real.log_one_sub_le` : `log(1−ε) ≤ −ε − ε²/4` for `ε ∈ [0, 1)`
 
 Both bounds are tight enough to close the Chernoff exponent to `−mε²/8`
-in the JL chi-squared tail (see `Contrib.Probability.Concentration.JohnsonLindenstrauss`).
+in the JL chi-squared tail (see `Mathlib.Probability.Concentration.JohnsonLindenstrauss`).
 
 ## References
 

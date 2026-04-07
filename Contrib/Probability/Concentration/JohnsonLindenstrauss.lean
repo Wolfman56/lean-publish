@@ -488,7 +488,7 @@ lemma jl_union_bound
   by_cases hS : S.card ≤ 1
   · exact ⟨0, fun u hu v hv huv =>
       absurd (Finset.card_le_one.mp hS u hu v hv) huv⟩
-  · push Not at hS   -- hS : 1 < S.card
+  · push_neg at hS
 
     set Good : Set (Fin m → Fin d → ℝ) :=
       {A | ∀ u ∈ S, ∀ v ∈ S, u ≠ v →
@@ -679,6 +679,11 @@ linear map `f : ℝᵈ →ₗ[ℝ] ℝᵐ` with `m = O(ε⁻² · log n)` satisf
 
 The required dimension `m` depends only on `|S|` and `ε`, NOT on the ambient
 dimension `d`. A scaled random Gaussian matrix witnesses existence.
+
+**NOTE on squared norms:** the conclusion uses `‖f u − f v‖²` (squared distances)
+rather than `‖f u − f v‖`. Both forms are equivalent for non-negative quantities;
+squared norms arise naturally from the chi-squared proof and avoid a `Real.sqrt`
+step. The distance form follows immediately by taking square roots.
 
 **NOTE on hypothesis:** `hm` requires `m > 8ε⁻² log(n(n−1))` while the classical
 statement uses `log n`. For `n ≥ 2` these agree up to a constant; the current
