@@ -218,35 +218,10 @@ lemma jl_chisq_complement_bound
         ∉ Set.Icc (1 - ε) (1 + ε)} =
       {A | ∑ i : Fin m, Xi i A ∉ Set.Icc (↑m * (1 - ε)) (↑m * (1 + ε))} := by
     ext A
-    simp only [Set.mem_setOf_eq, Set.mem_Icc, not_and_or, not_le]
-    rw [hSqNorm]
-    have hm_pos := hm_real
-    have hm_mul_inv : (m:ℝ) * (1/(m:ℝ)) = 1 := by field_simp
-    constructor
-    · rintro (h | h)
-      · exact Or.inl (by
-          have key := mul_lt_mul_of_pos_left h hm_pos
-          rw [show (m:ℝ) * (1/(m:ℝ) * ∑ i : Fin m, Xi i A) =
-              ∑ i : Fin m, Xi i A from by rw [← mul_assoc, hm_mul_inv, one_mul]] at key
-          linarith)
-      · exact Or.inr (by
-          have key := mul_lt_mul_of_pos_left h hm_pos
-          rw [show (m:ℝ) * (1/(m:ℝ) * ∑ i : Fin m, Xi i A) =
-              ∑ i : Fin m, Xi i A from by rw [← mul_assoc, hm_mul_inv, one_mul]] at key
-          linarith)
-    · rintro (h | h)
-      · exact Or.inl (by
-          have key : (1/(m:ℝ)) * ∑ i : Fin m, Xi i A < (1/(m:ℝ)) * (↑m * (1 - ε)) :=
-            mul_lt_mul_of_pos_left h (by positivity)
-          simp only [one_div, ← mul_assoc, inv_mul_cancel₀ hm_ne, one_mul] at key
-          rw [← one_div] at key
-          linarith)
-      · exact Or.inr (by
-          have key : (1/(m:ℝ)) * (↑m * (1 + ε)) < (1/(m:ℝ)) * ∑ i : Fin m, Xi i A :=
-            mul_lt_mul_of_pos_left h (by positivity)
-          simp only [one_div, ← mul_assoc, inv_mul_cancel₀ hm_ne, one_mul] at key
-          rw [← one_div] at key
-          linarith)
+    simp only [Set.mem_setOf_eq, Set.mem_Icc, not_and_or, not_le, hSqNorm]
+    rw [show (1 : ℝ) / ↑m * ∑ i : Fin m, Xi i A = (∑ i : Fin m, Xi i A) / ↑m from by ring,
+        div_lt_iff₀ hm_real, lt_div_iff₀ hm_real, mul_comm _ (↑m : ℝ),
+        mul_comm _ (↑m : ℝ)]
   rw [bad_eq]
   have bad_subset : {A : Matrix (Fin m) (Fin d) ℝ | ∑ i : Fin m, Xi i A ∉ Set.Icc (↑m * (1 - ε)) (↑m * (1 + ε))} ⊆
       {A | ↑m * (1 + ε) < ∑ i : Fin m, Xi i A} ∪
