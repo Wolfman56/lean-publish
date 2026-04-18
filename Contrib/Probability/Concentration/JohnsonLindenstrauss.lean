@@ -700,19 +700,16 @@ theorem johnson_lindenstrauss
         (1 - ε) * ‖u - v‖ ^ 2 ≤ ‖f u - f v‖ ^ 2 ∧
         ‖f u - f v‖ ^ 2 ≤ (1 + ε) * ‖u - v‖ ^ 2 := by
   obtain ⟨A, hA⟩ := jl_union_bound ε hε hε' S m hm
-  refine ⟨(WithLp.linearEquiv 2 ℝ (Fin m → ℝ)).symm.toLinearMap ∘ₗ
+  set f : EuclideanSpace ℝ (Fin d) →ₗ[ℝ] EuclideanSpace ℝ (Fin m) :=
+    (WithLp.linearEquiv 2 ℝ (Fin m → ℝ)).symm.toLinearMap ∘ₗ
       (Matrix.mulVecLin ((1 / sqrt (↑m : ℝ)) • A) ∘ₗ
-       (WithLp.linearEquiv 2 ℝ (Fin d → ℝ)).toLinearMap), ?_⟩
+       (WithLp.linearEquiv 2 ℝ (Fin d → ℝ)).toLinearMap) with hf_def
+  refine ⟨f, ?_⟩
   intro u hu v hv
-  have hnorm_eq : ‖((WithLp.linearEquiv 2 ℝ (Fin m → ℝ)).symm.toLinearMap ∘ₗ
-        (Matrix.mulVecLin ((1 / sqrt (↑m : ℝ)) • A) ∘ₗ
-         (WithLp.linearEquiv 2 ℝ (Fin d → ℝ)).toLinearMap)) u -
-      ((WithLp.linearEquiv 2 ℝ (Fin m → ℝ)).symm.toLinearMap ∘ₗ
-        (Matrix.mulVecLin ((1 / sqrt (↑m : ℝ)) • A) ∘ₗ
-         (WithLp.linearEquiv 2 ℝ (Fin d → ℝ)).toLinearMap)) v‖ ^ 2 =
+  have hnorm_eq : ‖f u - f v‖ ^ 2 =
       (1 / sqrt (↑m : ℝ)) ^ 2 *
         ‖(WithLp.equiv 2 (Fin m → ℝ)).symm (Matrix.mulVec A (u - v))‖ ^ 2 := by
-    simp only [← map_sub, LinearMap.comp_apply, LinearEquiv.coe_toLinearMap,
+    simp only [hf_def, ← map_sub, LinearMap.comp_apply, LinearEquiv.coe_toLinearMap,
                Matrix.mulVecLin_apply, WithLp.linearEquiv_apply, smul_mulVec_real, ← smul_sub]
     change ‖(1 / sqrt (↑m : ℝ)) •
         (WithLp.equiv 2 (Fin m → ℝ)).symm
