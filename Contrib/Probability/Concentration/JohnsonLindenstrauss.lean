@@ -35,7 +35,7 @@ and Lindenstrauss. *Random Structures & Algorithms* 22(1), 60–65.
 <https://cseweb.ucsd.edu/~dasgupta/papers/jl.pdf>
 -/
 
-open Real MeasureTheory ProbabilityTheory
+open Real MeasureTheory
 
 private lemma smul_mulVec_real {m d : ℕ} (c : ℝ) (M : Fin m → Fin d → ℝ) (x : Fin d → ℝ) :
     Matrix.mulVec (c • M) x = c • Matrix.mulVec M x := by
@@ -62,6 +62,8 @@ instance Matrix.instBorelSpace {m n : Type*} {α : Type*} [Fintype m] [Fintype n
     BorelSpace (Matrix m n α) := by
   haveI : BorelSpace (n → α) := Pi.borelSpace
   exact inferInstanceAs (BorelSpace (m → n → α))
+
+namespace ProbabilityTheory
 
 /-- Gaussian i.i.d. product measure over `m × d` real matrices (each entry ~ N(0,1)).
 
@@ -762,3 +764,5 @@ theorem johnson_lindenstrauss
   · constructor <;> (subst huv; simp)
   · obtain ⟨hlb, hub⟩ := hA u hu v hv huv
     exact ⟨hnorm_eq ▸ hlb, hnorm_eq ▸ hub⟩
+
+end ProbabilityTheory
