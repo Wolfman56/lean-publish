@@ -1,3 +1,8 @@
+/-
+Copyright (c) 2026 Ted Vucurevich. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Ted Vucurevich
+-/
 import Mathlib.Analysis.SpecialFunctions.Log.Deriv
 import Mathlib.Analysis.Calculus.MeanValue
 
@@ -19,7 +24,6 @@ in the JL chi-squared tail (see `Mathlib.Probability.Concentration.JohnsonLinden
 
 Dasgupta, S. and Gupta, A. (2003). An elementary proof of a theorem of Johnson
 and Lindenstrauss. *Random Structures & Algorithms* 22(1), 60–65.
-
 -/
 
 namespace Real
@@ -30,9 +34,9 @@ The proof defines `g(e) = e − e²/4 − log(1+e)`, notes `g(0) = 0`, and
 uses the sign of `g'(e) = e(1−e)/(2(1+e))` to establish monotonicity on
 each sign interval. -/
 lemma log_one_add_le {ε : ℝ} (hε : -1 < ε) (hε1 : ε ≤ 1) :
-    Real.log (1 + ε) ≤ ε - ε ^ 2 / 4 := by
-  suffices h : 0 ≤ ε - ε ^ 2 / 4 - Real.log (1 + ε) by linarith
-  set g := fun e : ℝ => e - e ^ 2 / 4 - Real.log (1 + e) with hg_def
+    log (1 + ε) ≤ ε - ε ^ 2 / 4 := by
+  suffices h : 0 ≤ ε - ε ^ 2 / 4 - log (1 + ε) by linarith
+  set g := fun e : ℝ => e - e ^ 2 / 4 - log (1 + e) with hg_def
   have hg0 : g 0 = 0 := by simp [hg_def]
   have hg_drv : ∀ e : ℝ, -1 < e →
       HasDerivAt g (e * (1 - e) / (2 * (1 + e))) e := fun e he => by
@@ -40,21 +44,24 @@ lemma log_one_add_le {ε : ℝ} (hε : -1 < ε) (hε1 : ε ≤ 1) :
     have hd1 : HasDerivAt (fun e => e) 1 e := hasDerivAt_id e
     have hd2 : HasDerivAt (fun e => e ^ 2 / 4) (2 * e / 4) e := by
       simpa [pow_one] using (hasDerivAt_pow 2 e).div_const 4
-    have hd3 : HasDerivAt (fun e => Real.log (1 + e)) (1 + e)⁻¹ e := by
-      have h := (Real.hasDerivAt_log h1e.ne').comp e
+    have hd3 : HasDerivAt (fun e => log (1 + e)) (1 + e)⁻¹ e := by
+      have h := (hasDerivAt_log h1e.ne').comp e
         ((hasDerivAt_const e 1).add (hasDerivAt_id e))
       simpa [Function.comp, zero_add, mul_one] using h
     have hd := hd1.sub hd2 |>.sub hd3
     have hdeq : 1 - 2 * e / 4 - (1 + e)⁻¹ = e * (1 - e) / (2 * (1 + e)) := by
       field_simp; ring
     rwa [hdeq] at hd
+  have hg_cont : ∀ {s : Set ℝ}, (∀ e ∈ s, -1 < e) → ContinuousOn g s := by
+    intro s hs
+    refine ContinuousOn.sub (ContinuousOn.sub continuous_id.continuousOn
+      ((continuous_pow 2).div_const 4).continuousOn) ?_
+    exact continuousOn_log.comp (continuous_const.add continuous_id).continuousOn
+      (fun e he => (show 0 < 1 + e by linarith [hs e he]).ne')
   by_cases hε_sign : 0 ≤ ε
   · have hmon : MonotoneOn g (Set.Icc 0 1) :=
       monotoneOn_of_hasDerivWithinAt_nonneg (convex_Icc 0 1)
-        (ContinuousOn.sub (ContinuousOn.sub continuous_id.continuousOn
-          ((continuous_pow 2).div_const 4).continuousOn)
-          (Real.continuousOn_log.comp (continuous_const.add continuous_id).continuousOn
-            (fun e he => (show 0 < 1 + e by linarith [he.1]).ne')))
+        (hg_cont fun e he => by linarith [he.1])
         (fun e he => by rw [interior_Icc] at he; exact (hg_drv e (by linarith [he.1])).hasDerivWithinAt)
         (fun e he => by
           rw [interior_Icc] at he
@@ -63,11 +70,8 @@ lemma log_one_add_le {ε : ℝ} (hε : -1 < ε) (hε1 : ε ≤ 1) :
   · have hε_neg : ε < 0 := not_le.mp hε_sign
     have hamon : AntitoneOn g (Set.Icc ε 0) :=
       antitoneOn_of_hasDerivWithinAt_nonpos (convex_Icc ε 0)
-        (ContinuousOn.sub (ContinuousOn.sub continuous_id.continuousOn
-          ((continuous_pow 2).div_const 4).continuousOn)
-          (Real.continuousOn_log.comp (continuous_const.add continuous_id).continuousOn
-            (fun e he => (show 0 < 1 + e by linarith [he.1, hε]).ne')))
-        (fun e he => by rw [interior_Icc] at he; exact (hg_drv e (by linarith [he.1, hε])).hasDerivWithinAt)
+        (hg_cont fun e he => by linarith [he.1])
+        (fun e he => by rw [interior_Icc] at he; exact (hg_drv e (by linarith [he.1])).hasDerivWithinAt)
         (fun e he => by
           rw [interior_Icc] at he
           exact div_nonpos_of_nonpos_of_nonneg
@@ -80,9 +84,9 @@ lemma log_one_add_le {ε : ℝ} (hε : -1 < ε) (hε1 : ε ≤ 1) :
 The proof defines `h(e) = −e − e²/4 − log(1−e)`, notes `h(0) = 0`, and
 uses `h'(e) = e(1+e)/(2(1−e)) ≥ 0` to show `h` is nondecreasing on `[0, 1)`. -/
 lemma log_one_sub_le {ε : ℝ} (hε0 : 0 ≤ ε) (hε1 : ε < 1) :
-    Real.log (1 - ε) ≤ -ε - ε ^ 2 / 4 := by
-  suffices h : 0 ≤ -ε - ε ^ 2 / 4 - Real.log (1 - ε) by linarith
-  set h := fun e : ℝ => -e - e ^ 2 / 4 - Real.log (1 - e) with hh_def
+    log (1 - ε) ≤ -ε - ε ^ 2 / 4 := by
+  suffices h : 0 ≤ -ε - ε ^ 2 / 4 - log (1 - ε) by linarith
+  set h := fun e : ℝ => -e - e ^ 2 / 4 - log (1 - e) with hh_def
   have hh0 : h 0 = 0 := by simp [hh_def]
   have hh_drv : ∀ e : ℝ, e < 1 →
       HasDerivAt h (e * (1 + e) / (2 * (1 - e))) e := fun e he => by
@@ -90,20 +94,21 @@ lemma log_one_sub_le {ε : ℝ} (hε0 : 0 ≤ ε) (hε1 : ε < 1) :
     have hd1 : HasDerivAt (fun e => -e) (-1 : ℝ) e := (hasDerivAt_id e).neg
     have hd2 : HasDerivAt (fun e => e ^ 2 / 4) (2 * e / 4) e := by
       simpa [pow_one] using (hasDerivAt_pow 2 e).div_const 4
-    have hd3 : HasDerivAt (fun e => Real.log (1 - e)) (-(1 - e)⁻¹) e := by
-      have h' := (Real.hasDerivAt_log h1e.ne').comp e
+    have hd3 : HasDerivAt (fun e => log (1 - e)) (-(1 - e)⁻¹) e := by
+      have h' := (hasDerivAt_log h1e.ne').comp e
         ((hasDerivAt_const e 1).sub (hasDerivAt_id e))
       simpa [Function.comp, zero_sub, mul_neg, mul_one] using h'
     have hd := hd1.sub hd2 |>.sub hd3
     have hdeq : -1 - 2 * e / 4 - -(1 - e)⁻¹ = e * (1 + e) / (2 * (1 - e)) := by
       field_simp; ring
     rwa [hdeq] at hd
+  have hh_cont : ContinuousOn h (Set.Ico 0 1) := by
+    refine ContinuousOn.sub (ContinuousOn.sub continuous_neg.continuousOn
+      ((continuous_pow 2).div_const 4).continuousOn) ?_
+    exact continuousOn_log.comp (continuous_const.sub continuous_id).continuousOn
+      (fun e he => (show 0 < 1 - e by linarith [he.2]).ne')
   have hmon : MonotoneOn h (Set.Ico 0 1) :=
-    monotoneOn_of_hasDerivWithinAt_nonneg (convex_Ico 0 1)
-      (ContinuousOn.sub (ContinuousOn.sub continuous_neg.continuousOn
-        ((continuous_pow 2).div_const 4).continuousOn)
-        (Real.continuousOn_log.comp (continuous_const.sub continuous_id).continuousOn
-          (fun e he => (show 0 < 1 - e by linarith [he.2]).ne')))
+    monotoneOn_of_hasDerivWithinAt_nonneg (convex_Ico 0 1) hh_cont
       (fun e he => by rw [interior_Ico] at he; exact (hh_drv e he.2).hasDerivWithinAt)
       (fun e he => by
         rw [interior_Ico] at he
