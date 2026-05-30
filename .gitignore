@@ -7,3 +7,4 @@
 *.trace
 *.extra
 .claude/
+.DS_Store
